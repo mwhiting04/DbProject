@@ -1,0 +1,209 @@
+﻿@model PagedList.IPagedList<DbProject.Models.BusinessEntity>
+@using PagedList.Mvc;
+
+@Html.Partial("_DeleteForm", 0)
+<input type="hidden" id="currentSortOrder" value="@ViewBag.CurrentSort" />
+
+
+<h2>Person List</h2>
+
+<button class="btn btn-success" id="createButton">Create New Person</button>
+<button type="button" class="btn btn-danger" id="deleteButton">Delete</button>
+
+<div id="personListContainer">
+    @Html.Partial("_PersonListPartial", Model)
+</div>
+
+<!-- Create Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Highlight the selected row
+
+            var currentSortOrder = $('#currentSortOrder').val();
+            console.log('Initial currentSortOrder:', currentSortOrder);
+
+            $('.selectable-row').click(function () {
+                $('.selectable-row').removeClass('selected-row');
+                $(this).addClass('selected-row');
+            });
+
+            function loadPersonList(sortOrder, page) {
+                $.ajax({
+                    url: '@Url.Action("Index")',
+                    data: { sortOrder: sortOrder, page: page },
+                    success: function (data) {
+                        console.log("Data loaded for sortOrder: " + sortOrder + " and page: " + page);
+                        $('#personListContainer').html(data);
+                    },
+                    error: function () {
+                        alert('An error occurred while loading the list.');
+                    }
+                });
+            }
+
+
+
+            var currentSortOrder = $('#currentSortOrder').val();
+
+            $(document).on('click', '.sort-link', function (e) {
+                e.preventDefault();
+                var sortOrder = $(this).data('sort');
+                var currentSortOrder = $('#currentSortOrder').val();
+                var newSortOrder = (currentSortOrder === sortOrder) ? (sortOrder + '_desc') : sortOrder;
+
+                // Debugging
+                console.log(`Current sortOrder: ${currentSortOrder}`);
+                console.log(`Clicked sortOrder: ${sortOrder}`);
+                console.log(`New sortOrder: ${newSortOrder}`);
+
+                // Update the hidden input with new sort order
+                $('#currentSortOrder').val(newSortOrder);
+
+                loadPersonList(newSortOrder, '@ViewBag.CurrentPage');
+            });
+
+
+
+
+
+
+            $(document).on('click', '.page-link', function (e) {
+                console.log('Pagination link clicked');
+                e.preventDefault();
+                var page = $(this).data('page');
+                loadPersonList(currentSortOrder, page);
+            });
+
+
+            $('#detailsModal').on('show.bs.modal', function (e) {
+                var button = $(e.relatedTarget);
+                var personId = button.data('id');
+
+                var modal = $(this);
+                $.ajax({
+                    url: '@Url.Action("Details")',
+                    data: { id: personId },
+                    success: function (data) {
+                        modal.find('.modal-content').html(data);
+                    }
+                });
+            });
+
+
+            $(document).on('click', '.pagination a', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                $.get(url, function (data) {
+                    $('#personListContainer').html(data);
+                });
+            });
+
+
+
+            $('#createButton').on('click', function () {
+                $.ajax({
+                    url: '@Url.Action("Create")',
+                    success: function (data) {
+                        $('#createModal .modal-content').html(data);
+                        $('#createModal').modal('show');
+                    }
+                });
+            });
+
+            $(document).on('submit', '#editForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Edit")',
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            $('#detailsModal').modal('hide');
+                            location.reload(); // Reloads the page to show updated data
+                        } else {
+                            alert(response.message || 'An error occurred while saving changes.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while saving changes.');
+                    }
+                });
+            });
+
+            $(document).on('submit', '#createForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            $('#createModal').modal('hide');
+                            location.reload(); // Reloads the page to show updated data
+                        } else {
+                            alert('An error occurred while creating the record.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while creating the record.');
+                    }
+                });
+            });
+
+            $(document).on('click', '#deleteButton', function () {
+                var selectedRow = $('.selected-row');
+                if (selectedRow.length == 0) {
+                    alert('Please select a record to delete.');
+                    return;
+                }
+
+                var id = selectedRow.data('id');
+
+                if (confirm('Are you sure you want to delete this record?')) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Delete")',
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                location.reload();
+                            } else {
+                                alert('An error occurred while deleting the record.');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error:', error);
+                            alert('An error occurred while deleting the record.');
+                        }
+                    });
+                }
+            });
+        });
+
+         var testValue = '@ViewBag.CurrentSort';
+         console.log('Test Value:', testValue); // Should show the actual value
+
+    </script>
+}

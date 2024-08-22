@@ -1,0 +1,6 @@
+﻿
+
+<form id="deleteForm" action="/Person/Delete" method="POST" style="display: none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@Model" id="deleteId">
+</form>
