@@ -17,16 +17,6 @@ namespace DbProject.Controllers
             System.Diagnostics.Debug.WriteLine($"Received sortOrder: {sortOrder}");
             System.Diagnostics.Debug.WriteLine($"Received page: {page}");
 
-            // Sorting parameters for the view
-            ViewBag.CurrentSort = sortOrder;
-            ViewBag.IdSortParm = sortOrder == "CustomPersonID" ? "CustomPersonID_desc" : "Id";
-            ViewBag.TitleSortParm = sortOrder == "Title" ? "Title_desc" : "Title";
-            ViewBag.FirstNameSortParm = sortOrder == "FirstName" ? "FirstName_desc" : "FirstName";
-            ViewBag.LastNameSortParm = sortOrder == "LastName" ? "LastName_desc" : "LastName";
-            ViewBag.ModifiedDateSortParm = sortOrder == "ModifiedDate" ? "ModifiedDate_desc" : "ModifiedDate";
-            ViewBag.CurrentPage = page ?? 1;
-
-            // Query to fetch CustomPerson entities
             var customPeople = _db.CustomPersons.AsQueryable();
 
             // Debugging before sorting
@@ -70,9 +60,6 @@ namespace DbProject.Controllers
                     break;
             }
 
-            // Debugging after sorting
-            System.Diagnostics.Debug.WriteLine("Sorting applied");
-
             // Set pagination parameters
             int pageSize = 25;
             int pageNumber = (page ?? 1);
@@ -91,10 +78,7 @@ namespace DbProject.Controllers
         }
 
 
-
-
-
-        // GET: Person/Details/5
+        // GET: Person/Details
         public ActionResult Details(int id)
         {
             var person = _db.CustomPersons.SingleOrDefault(p => p.CustomPersonID == id);
@@ -107,7 +91,6 @@ namespace DbProject.Controllers
         }
 
 
-
         // GET: Person/Create
         public ActionResult Create()
         {
@@ -115,9 +98,9 @@ namespace DbProject.Controllers
             return PartialView("_CreatePartial", businessEntity);
         }
 
+
         // POST: Person/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Title,FirstName,LastName")] CustomPerson customPerson)
         {
             if (ModelState.IsValid)
@@ -193,7 +176,6 @@ namespace DbProject.Controllers
                     redirectUrl = Url.Action("Index", new { sortOrder = sortOrder, page = page })
                 });
             }
-
             return Json(new { success = false, message = "Invalid data." });
         }
 
@@ -217,11 +199,5 @@ namespace DbProject.Controllers
 
             return Json(new { success = true });
         }
-
-
-
-
-
-
     }
 }

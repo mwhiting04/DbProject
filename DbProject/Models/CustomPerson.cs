@@ -6,7 +6,7 @@ namespace DbProject.Models
     public class CustomPerson
     {
         [Key]
-        public int CustomPersonID { get; set; }  // New primary key instead of BusinessEntityID
+        public int CustomPersonID { get; set; }
 
         public string Title { get; set; }
         public string FirstName { get; set; }
