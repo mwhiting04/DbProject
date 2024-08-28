@@ -1,4 +1,4 @@
-﻿@model PagedList.IPagedList<DbProject.Models.BusinessEntity>
+﻿@model PagedList.IPagedList<DbProject.Models.CustomPerson>
 @using PagedList.Mvc;
 
 @Html.Partial("_DeleteForm", 0)
@@ -17,16 +17,21 @@
 <!-- Create Modal -->
 <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content"></div>
+        <div class="modal-content">
+
+        </div>
     </div>
 </div>
 
 <!-- Details Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <div class="modal-content"></div>
+        <div class="modal-content">
+            <!-- Content loaded here by AJAX -->
+        </div>
     </div>
 </div>
+
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -34,14 +39,15 @@
     <script type="text/javascript">
         $(document).ready(function () {
             // Highlight the selected row
+            function bindRowSelection() {
+                $('.selectable-row').off('click').on('click', function () {
+                    $('.selectable-row').removeClass('selected-row');
+                    $(this).addClass('selected-row');
+                });
+            }
 
-            var currentSortOrder = $('#currentSortOrder').val();
-            console.log('Initial currentSortOrder:', currentSortOrder);
-
-            $('.selectable-row').click(function () {
-                $('.selectable-row').removeClass('selected-row');
-                $(this).addClass('selected-row');
-            });
+            // Initial binding of row selection
+            bindRowSelection();
 
             function loadPersonList(sortOrder, page) {
                 $.ajax({
@@ -50,6 +56,7 @@
                     success: function (data) {
                         console.log("Data loaded for sortOrder: " + sortOrder + " and page: " + page);
                         $('#personListContainer').html(data);
+                        bindRowSelection(); // Reapply event binding after content reload
                     },
                     error: function () {
                         alert('An error occurred while loading the list.');
@@ -57,22 +64,19 @@
                 });
             }
 
-
-
             var currentSortOrder = $('#currentSortOrder').val();
 
             $(document).on('click', '.sort-link', function (e) {
                 e.preventDefault();
+
                 var sortOrder = $(this).data('sort');
                 var currentSortOrder = $('#currentSortOrder').val();
                 var newSortOrder = (currentSortOrder === sortOrder) ? (sortOrder + '_desc') : sortOrder;
 
-                // Debugging
                 console.log(`Current sortOrder: ${currentSortOrder}`);
                 console.log(`Clicked sortOrder: ${sortOrder}`);
                 console.log(`New sortOrder: ${newSortOrder}`);
 
-                // Update the hidden input with new sort order
                 $('#currentSortOrder').val(newSortOrder);
 
                 loadPersonList(newSortOrder, '@ViewBag.CurrentPage');
@@ -80,31 +84,13 @@
 
 
 
-
-
-
+            // Pagination functionality
             $(document).on('click', '.page-link', function (e) {
-                console.log('Pagination link clicked');
                 e.preventDefault();
                 var page = $(this).data('page');
+                var currentSortOrder = $('#currentSortOrder').val();
                 loadPersonList(currentSortOrder, page);
             });
-
-
-            $('#detailsModal').on('show.bs.modal', function (e) {
-                var button = $(e.relatedTarget);
-                var personId = button.data('id');
-
-                var modal = $(this);
-                $.ajax({
-                    url: '@Url.Action("Details")',
-                    data: { id: personId },
-                    success: function (data) {
-                        modal.find('.modal-content').html(data);
-                    }
-                });
-            });
-
 
             $(document).on('click', '.pagination a', function (e) {
                 e.preventDefault();
@@ -115,7 +101,27 @@
             });
 
 
+            //Details Form
+            $('#detailsModal').on('show.bs.modal', function (e) {
+                var button = $(e.relatedTarget);
+                var personId = button.data('id'); // Get ID from data-id attribute
 
+                var modal = $(this);
+                $.ajax({
+                    url: '@Url.Action("Details")',
+                    data: { id: personId },
+                    success: function (data) {
+                        /*console.log('Received data:', data); // Debugging*/
+                        modal.find('.modal-content').html(data); // Load content into modal body
+                    },
+                    error: function () {
+                        alert('An error occurred while loading the details.');
+                    }
+                });
+            });
+
+
+            //Create Form
             $('#createButton').on('click', function () {
                 $.ajax({
                     url: '@Url.Action("Create")',
@@ -126,6 +132,9 @@
                 });
             });
 
+
+
+            //Submit Edits
             $(document).on('submit', '#editForm', function (e) {
                 e.preventDefault();
                 var form = $(this);
@@ -149,6 +158,8 @@
                 });
             });
 
+
+            //Submit Create
             $(document).on('submit', '#createForm', function (e) {
                 e.preventDefault();
                 var form = $(this);
@@ -172,6 +183,8 @@
                 });
             });
 
+
+            //Delete Record
             $(document).on('click', '#deleteButton', function () {
                 var selectedRow = $('.selected-row');
                 if (selectedRow.length == 0) {
@@ -180,6 +193,7 @@
                 }
 
                 var id = selectedRow.data('id');
+                console.log('Selected ID for deletion:', id); // Debugging
 
                 if (confirm('Are you sure you want to delete this record?')) {
                     $.ajax({
@@ -187,10 +201,12 @@
                         url: '@Url.Action("Delete")',
                         data: { id: id },
                         success: function (response) {
+                            console.log("Server Response:", response);
                             if (response.success) {
-                                location.reload();
+                                alert('Record deleted successfully.');
+                                location.reload(); // Reloads the page to show updated data
                             } else {
-                                alert('An error occurred while deleting the record.');
+                                alert(response.message || 'An error occurred while deleting the record.');
                             }
                         },
                         error: function (xhr, status, error) {
@@ -202,8 +218,9 @@
             });
         });
 
-         var testValue = '@ViewBag.CurrentSort';
-         console.log('Test Value:', testValue); // Should show the actual value
+        var testValue = '@ViewBag.CurrentSort';
+        console.log('Test Value:', testValue); // Should show the actual value
 
     </script>
 }
+

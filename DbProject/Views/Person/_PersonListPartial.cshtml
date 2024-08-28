@@ -1,25 +1,27 @@
-﻿@model PagedList.IPagedList<DbProject.Models.BusinessEntity>
+﻿@model PagedList.IPagedList<DbProject.Models.CustomPerson>
 @using PagedList.Mvc;
 @using PagedList;
-
 
 <table class="table table-hover">
     <thead>
         <tr>
             <th>
-                @Html.ActionLink("ID", "Index", new { sortOrder = ViewBag.IdSortParm, page = ViewBag.CurrentPage }, new { @class = "sort-link", data_sort = "Id" })
+                <a href="#" class="sort-link" data-sort="CustomPersonID">ID</a>
             </th>
             <th>
-                @Html.ActionLink("Title", "Index", new { sortOrder = ViewBag.TitleSortParm, page = ViewBag.CurrentPage }, new { @class = "sort-link", data_sort = "Title" })
+                <a href="#" class="sort-link" data-sort="Title">Title</a>
             </th>
             <th>
-                @Html.ActionLink("First Name", "Index", new { sortOrder = ViewBag.FirstNameSortParm, page = ViewBag.CurrentPage }, new { @class = "sort-link", data_sort = "FirstName" })
+                <a href="#" class="sort-link" data-sort="FirstName">First Name</a>
             </th>
             <th>
-                @Html.ActionLink("Last Name", "Index", new { sortOrder = ViewBag.LastNameSortParm, page = ViewBag.CurrentPage }, new { @class = "sort-link", data_sort = "LastName" })
+                <a href="#" class="sort-link" data-sort="LastName">Last Name</a>
             </th>
             <th>
-                @Html.ActionLink("Modified Date", "Index", new { sortOrder = ViewBag.ModifiedDateSortParm, page = ViewBag.CurrentPage }, new { @class = "sort-link", data_sort = "ModifiedDate" })
+                <a href="#" class="sort-link" data-sort="ModifiedDate">Modified Date</a>
+            </th>
+            <th>
+                <!-- Additional columns can be added here if needed -->
             </th>
         </tr>
     </thead>
@@ -28,14 +30,14 @@
         {
             var person = Model[i];
             var rowClass = i % 2 == 0 ? "even-row" : ""; // Apply class to every other row
-            <tr class="selectable-row @rowClass" data-id="@person.BusinessEntityID">
-                <td>@Html.DisplayFor(modelItem => person.BusinessEntityID)</td>
-                <td>@Html.DisplayFor(modelItem => person.Person.Title)</td>
-                <td>@Html.DisplayFor(modelItem => person.Person.FirstName)</td>
-                <td>@Html.DisplayFor(modelItem => person.Person.LastName)</td>
-                <td>@Html.DisplayFor(modelItem => person.Person.ModifiedDate)</td>
+            <tr class="selectable-row @rowClass" data-id="@person.CustomPersonID">
+                <td>@Html.DisplayFor(modelItem => person.CustomPersonID)</td>
+                <td>@Html.DisplayFor(modelItem => person.Title)</td>
+                <td>@Html.DisplayFor(modelItem => person.FirstName)</td>
+                <td>@Html.DisplayFor(modelItem => person.LastName)</td>
+                <td>@Html.DisplayFor(modelItem => person.ModifiedDate)</td>
                 <td>
-                    <button class="btn btn-info details-button" data-toggle="modal" data-target="#detailsModal" data-id="@person.BusinessEntityID">
+                    <button class="btn btn-info details-button" data-toggle="modal" data-target="#detailsModal" data-id="@person.CustomPersonID">
                         Details
                     </button>
                 </td>
@@ -47,4 +49,3 @@
 <div>
     @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, sortOrder = ViewBag.CurrentSort }))
 </div>
-

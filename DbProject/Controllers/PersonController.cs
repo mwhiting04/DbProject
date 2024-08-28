@@ -1,7 +1,6 @@
 ﻿using DbProject.Models;
 using PagedList;
 using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
 
@@ -18,66 +17,71 @@ namespace DbProject.Controllers
             System.Diagnostics.Debug.WriteLine($"Received sortOrder: {sortOrder}");
             System.Diagnostics.Debug.WriteLine($"Received page: {page}");
 
-
-            ViewBag.CurrentSort = sortOrder; // Ensure this line sets the value correctly
-            ViewBag.IdSortParm = sortOrder == "Id" ? "Id_desc" : "Id";
+            // Sorting parameters for the view
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.IdSortParm = sortOrder == "CustomPersonID" ? "CustomPersonID_desc" : "Id";
             ViewBag.TitleSortParm = sortOrder == "Title" ? "Title_desc" : "Title";
             ViewBag.FirstNameSortParm = sortOrder == "FirstName" ? "FirstName_desc" : "FirstName";
             ViewBag.LastNameSortParm = sortOrder == "LastName" ? "LastName_desc" : "LastName";
             ViewBag.ModifiedDateSortParm = sortOrder == "ModifiedDate" ? "ModifiedDate_desc" : "ModifiedDate";
             ViewBag.CurrentPage = page ?? 1;
 
-            var businessEntities = _db.BusinessEntities
-                .Include(be => be.Person)
-                .Where(be => be.Person != null);
+            // Query to fetch CustomPerson entities
+            var customPeople = _db.CustomPersons.AsQueryable();
 
             // Debugging before sorting
             System.Diagnostics.Debug.WriteLine($"Querying with sortOrder: {sortOrder}");
 
+            // Apply sorting based on the sortOrder parameter
             switch (sortOrder)
             {
-                case "Id":
-                    businessEntities = businessEntities.OrderBy(be => be.BusinessEntityID);
+                case "CustomPersonID":
+                    customPeople = customPeople.OrderBy(cp => cp.CustomPersonID);
                     break;
-                case "Id_desc":
-                    businessEntities = businessEntities.OrderByDescending(be => be.BusinessEntityID);
+                case "CustomPersonID_desc":
+                    customPeople = customPeople.OrderByDescending(cp => cp.CustomPersonID);
                     break;
                 case "Title":
-                    businessEntities = businessEntities.OrderBy(be => be.Person.Title);
+                    customPeople = customPeople.OrderBy(cp => cp.Title);
                     break;
                 case "Title_desc":
-                    businessEntities = businessEntities.OrderByDescending(be => be.Person.Title);
+                    customPeople = customPeople.OrderByDescending(cp => cp.Title);
                     break;
                 case "FirstName":
-                    businessEntities = businessEntities.OrderBy(be => be.Person.FirstName);
+                    customPeople = customPeople.OrderBy(cp => cp.FirstName);
                     break;
                 case "FirstName_desc":
-                    businessEntities = businessEntities.OrderByDescending(be => be.Person.FirstName);
+                    customPeople = customPeople.OrderByDescending(cp => cp.FirstName);
                     break;
                 case "LastName":
-                    businessEntities = businessEntities.OrderBy(be => be.Person.LastName);
+                    customPeople = customPeople.OrderBy(cp => cp.LastName);
                     break;
                 case "LastName_desc":
-                    businessEntities = businessEntities.OrderByDescending(be => be.Person.LastName);
+                    customPeople = customPeople.OrderByDescending(cp => cp.LastName);
                     break;
                 case "ModifiedDate":
-                    businessEntities = businessEntities.OrderBy(be => be.Person.ModifiedDate);
+                    customPeople = customPeople.OrderBy(cp => cp.ModifiedDate);
                     break;
                 case "ModifiedDate_desc":
-                    businessEntities = businessEntities.OrderByDescending(be => be.Person.ModifiedDate);
+                    customPeople = customPeople.OrderByDescending(cp => cp.ModifiedDate);
                     break;
                 default:
-                    businessEntities = businessEntities.OrderBy(be => be.BusinessEntityID);
+                    customPeople = customPeople.OrderBy(cp => cp.CustomPersonID);
                     break;
             }
 
             // Debugging after sorting
             System.Diagnostics.Debug.WriteLine("Sorting applied");
 
+            // Set pagination parameters
             int pageSize = 25;
             int pageNumber = (page ?? 1);
-            var pagedList = businessEntities.ToPagedList(pageNumber, pageSize);
 
+            // Apply pagination
+            var pagedList = customPeople.ToPagedList(pageNumber, pageSize);
+
+
+            // Return partial view for AJAX requests or full view
             if (Request.IsAjaxRequest())
             {
                 return PartialView("_PersonListPartial", pagedList);
@@ -88,32 +92,33 @@ namespace DbProject.Controllers
 
 
 
+
+
         // GET: Person/Details/5
         public ActionResult Details(int id)
         {
-            var businessEntity = _db.BusinessEntities
-                .Include(be => be.Person)
-                .SingleOrDefault(be => be.BusinessEntityID == id);
-
-            if (businessEntity == null)
+            var person = _db.CustomPersons.SingleOrDefault(p => p.CustomPersonID == id);
+            if (person == null)
             {
                 return HttpNotFound();
             }
 
-            return PartialView("_DetailsPartial", businessEntity);
+            return PartialView("_DetailsPartial", person); // Return the partial view with person details
         }
+
+
 
         // GET: Person/Create
         public ActionResult Create()
         {
-            var businessEntity = new BusinessEntity();
+            var businessEntity = new CustomPerson();
             return PartialView("_CreatePartial", businessEntity);
         }
 
         // POST: Person/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Title,FirstName,LastName")] Person person)
+        public ActionResult Create([Bind(Include = "Title,FirstName,LastName")] CustomPerson customPerson)
         {
             if (ModelState.IsValid)
             {
@@ -121,29 +126,13 @@ namespace DbProject.Controllers
                 {
                     try
                     {
-                        if (person.BusinessEntityID == 0)
-                        {
-                            var newBusinessEntity = new BusinessEntity();
-                            _db.BusinessEntities.Add(newBusinessEntity);
-                            _db.SaveChanges();
-                            person.BusinessEntityID = newBusinessEntity.BusinessEntityID;
-                        }
-                        else
-                        {
-                            // Check if BusinessEntityID exists
-                            var businessEntity = _db.BusinessEntities.Find(person.BusinessEntityID);
-                            if (businessEntity == null)
-                            {
-                                return Json(new { success = false, message = "BusinessEntityID does not exist." });
-                            }
-                        }
+                        // Populate required fields
+                        customPerson.ModifiedDate = DateTime.Now;
+                        customPerson.PersonType = "EM";
+                        customPerson.EmailPromotion = 0;
+                        customPerson.NameStyle = false;
 
-                        person.ModifiedDate = DateTime.Now;
-                        person.PersonType = "EM";
-                        person.EmailPromotion = 0;
-                        person.NameStyle = false;
-
-                        _db.Persons.Add(person);
+                        _db.CustomPersons.Add(customPerson);
                         int changes = _db.SaveChanges(); // Check the number of changes
 
                         if (changes > 0)
@@ -168,74 +157,71 @@ namespace DbProject.Controllers
                     }
                 }
             }
-            return PartialView("_CreatePartial", person);
+            return PartialView("_CreatePartial", customPerson);
         }
 
+
+
         // POST: Person/Edit
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(BusinessEntity businessEntity, string sortOrder, int? page)
+        public ActionResult Edit(CustomPerson customPerson, string sortOrder, int? page)
         {
             if (ModelState.IsValid)
             {
-                var existingEntity = _db.BusinessEntities
-                    .Include(be => be.Person)
-                    .SingleOrDefault(be => be.BusinessEntityID == businessEntity.BusinessEntityID);
+                // Log the CustomPersonID for debugging
+                Console.WriteLine("CustomPersonID: " + customPerson.CustomPersonID);
 
-                if (existingEntity == null)
+                // Fetch the existing CustomPerson entity
+                var existingPerson = _db.CustomPersons
+                    .SingleOrDefault(cp => cp.CustomPersonID == customPerson.CustomPersonID);
+
+                if (existingPerson == null)
                 {
                     return Json(new { success = false, message = "Entity not found." });
                 }
 
                 // Update person details
-                existingEntity.Person.Title = businessEntity.Person.Title;
-                existingEntity.Person.FirstName = businessEntity.Person.FirstName;
-                existingEntity.Person.LastName = businessEntity.Person.LastName;
-                existingEntity.Person.ModifiedDate = DateTime.Now;
+                existingPerson.Title = customPerson.Title;
+                existingPerson.FirstName = customPerson.FirstName;
+                existingPerson.LastName = customPerson.LastName;
+                existingPerson.ModifiedDate = DateTime.Now;
 
                 _db.SaveChanges();
 
-                // Return JSON with success and redirect URL including sortOrder and page parameters
                 return Json(new
                 {
                     success = true,
                     redirectUrl = Url.Action("Index", new { sortOrder = sortOrder, page = page })
                 });
             }
+
             return Json(new { success = false, message = "Invalid data." });
         }
 
-        // POST: Person/Delete/5
+
+
+        // POST: Person/Delete
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-            try
-            {
-                var businessEntity = _db.BusinessEntities
-                    .Include(be => be.Person)
-                    .SingleOrDefault(be => be.BusinessEntityID == id);
+            // Find the CustomPerson entity by its ID
+            var customPerson = _db.CustomPersons.Find(id);
 
-                if (businessEntity != null)
-                {
-                    // Remove the person
-                    if (businessEntity.Person != null)
-                    {
-                        _db.Persons.Remove(businessEntity.Person);
-                    }
-
-                    // Remove the business entity
-                    _db.BusinessEntities.Remove(businessEntity);
-                    _db.SaveChanges();
-                    return Json(new { success = true });
-                }
-                return Json(new { success = false, message = "Record not found." });
-            }
-            catch (Exception ex)
+            if (customPerson == null)
             {
-                System.Diagnostics.Debug.WriteLine("Error deleting entity: " + ex.Message);
-                return Json(new { success = false, message = "An error occurred while deleting the record." });
+                return Json(new { success = false, message = "Entity not found." });
             }
+
+            // Remove the entity from the DbSet
+            _db.CustomPersons.Remove(customPerson);
+            _db.SaveChanges();
+
+            return Json(new { success = true });
         }
+
+
+
+
+
+
     }
 }
