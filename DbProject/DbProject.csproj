@@ -190,6 +190,10 @@
     <Compile Include="Migrations\202408272011119_CustomPerson.Designer.cs">
       <DependentUpon>202408272011119_CustomPerson.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202409041252592_dataValidation.cs" />
+    <Compile Include="Migrations\202409041252592_dataValidation.Designer.cs">
+      <DependentUpon>202409041252592_dataValidation.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AdventureWorks2022Context.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
@@ -317,6 +321,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202408272011119_CustomPerson.resx">
       <DependentUpon>202408272011119_CustomPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202409041252592_dataValidation.resx">
+      <DependentUpon>202409041252592_dataValidation.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -136,16 +136,18 @@ namespace DbProject.Controllers
                         {
                             System.Diagnostics.Debug.WriteLine(ex.InnerException.Message);
                         }
-                        throw;
+                        return Json(new { success = false, message = "An error occurred while creating the record." });
                     }
                 }
             }
+            // If ModelState is not valid, return a partial view with validation messages
             return PartialView("_CreatePartial", customPerson);
         }
 
 
 
         // POST: Person/Edit
+        [HttpPost]
         public ActionResult Edit(CustomPerson customPerson, string sortOrder, int? page)
         {
             if (ModelState.IsValid)
@@ -168,7 +170,14 @@ namespace DbProject.Controllers
                 existingPerson.LastName = customPerson.LastName;
                 existingPerson.ModifiedDate = DateTime.Now;
 
-                _db.SaveChanges();
+                try
+                {
+                    _db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "An error occurred while saving changes: " + ex.Message });
+                }
 
                 return Json(new
                 {
@@ -176,7 +185,9 @@ namespace DbProject.Controllers
                     redirectUrl = Url.Action("Index", new { sortOrder = sortOrder, page = page })
                 });
             }
-            return Json(new { success = false, message = "Invalid data." });
+
+            // If validation fails, return the form with validation messages
+            return PartialView("_DetailsPartial", customPerson);
         }
 
 

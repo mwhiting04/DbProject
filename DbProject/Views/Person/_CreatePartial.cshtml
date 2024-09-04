@@ -6,9 +6,17 @@
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
+
 <div class="modal-body">
     <form id="createForm" action="@Url.Action("Create")" method="POST">
         @Html.AntiForgeryToken()
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="validation-summary">
+            @Html.ValidationSummary(true)
+        </div>
+
 
         <div class="form-group">
             @Html.LabelFor(model => model.Title)

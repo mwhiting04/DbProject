@@ -10,6 +10,8 @@
 <button class="btn btn-success" id="createButton">Create New Person</button>
 <button type="button" class="btn btn-danger" id="deleteButton">Delete</button>
 
+<hr />
+
 <div id="personListContainer">
     @Html.Partial("_PersonListPartial", Model)
 </div>
@@ -38,15 +40,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            // Highlight the selected row
+            var selectedRowId = null; // Variable to store the ID of the selected row
+
+            // Bind row selection function
             function bindRowSelection() {
                 $('.selectable-row').off('click').on('click', function () {
                     $('.selectable-row').removeClass('selected-row');
                     $(this).addClass('selected-row');
+                    selectedRowId = $(this).data('id'); // Store the selected row ID
                 });
+
+                // Reapply the highlight if there's a selected row ID
+                if (selectedRowId !== null) {
+                    $('.selectable-row').each(function () {
+                        if ($(this).data('id') === selectedRowId) {
+                            $(this).addClass('selected-row');
+                        }
+                    });
+                }
             }
 
-            // Initial binding of row selection
             bindRowSelection();
 
             function loadPersonList(sortOrder, page) {
@@ -65,6 +78,7 @@
             }
 
 
+            //Sort functionality
             $(document).on('click', '.sort-link', function (e) {
                 e.preventDefault();
 
@@ -82,7 +96,6 @@
             });
 
 
-
             // Pagination functionality
             $(document).on('click', '.page-link', function (e) {
                 e.preventDefault();
@@ -96,6 +109,7 @@
                 var url = $(this).attr('href');
                 $.get(url, function (data) {
                     $('#personListContainer').html(data);
+                    bindRowSelection();
                 });
             });
 
@@ -132,8 +146,7 @@
             });
 
 
-
-            //Submit Edits
+            // Submit Edits
             $(document).on('submit', '#editForm', function (e) {
                 e.preventDefault();
                 var form = $(this);
@@ -144,10 +157,15 @@
                     data: form.serialize(),
                     success: function (response) {
                         if (response.success) {
+                            // Hide the modal on successful edit
                             $('#detailsModal').modal('hide');
-                            location.reload(); // Reloads the page to show updated data
+                            // Refresh the list to reflect updated data without a full page reload
+                            loadPersonList($('#currentSortOrder').val(), '@ViewBag.CurrentPage');
                         } else {
-                            alert(response.message || 'An error occurred while saving changes.');
+                            // Replace the current modal content with the new content returned from the server
+                            $('#detailsModal .modal-body').html(response);
+                            // Optionally, scroll to the top of the modal to display the errors clearly
+                            $('#detailsModal').scrollTop(0);
                         }
                     },
                     error: function (xhr, status, error) {
@@ -172,7 +190,8 @@
                             $('#createModal').modal('hide');
                             location.reload(); // Reloads the page to show updated data
                         } else {
-                            alert('An error occurred while creating the record.');
+                            // If validation fails or no changes are made, render the partial view in the modal
+                            $('#createModal .modal-content').html(response);
                         }
                     },
                     error: function (xhr, status, error) {
@@ -181,6 +200,8 @@
                     }
                 });
             });
+
+
 
 
             //Delete Record
