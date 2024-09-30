@@ -182,30 +182,23 @@
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\PersonController.cs" />
     <Compile Include="Controllers\testController.cs" />
+    <Compile Include="Data\CustomPersonService.cs" />
     <Compile Include="Data\DbContext.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202408272011119_CustomPerson.cs" />
-    <Compile Include="Migrations\202408272011119_CustomPerson.Designer.cs">
-      <DependentUpon>202408272011119_CustomPerson.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202409041252592_dataValidation.cs" />
-    <Compile Include="Migrations\202409041252592_dataValidation.Designer.cs">
-      <DependentUpon>202409041252592_dataValidation.cs</DependentUpon>
+    <Compile Include="Migrations\202409301343064_InitialCreate.cs" />
+    <Compile Include="Migrations\202409301343064_InitialCreate.Designer.cs">
+      <DependentUpon>202409301343064_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AdventureWorks2022Context.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\BusinessEntity.cs" />
     <Compile Include="Models\CustomPerson.cs" />
-    <Compile Include="Models\EmailAddressModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
-    <Compile Include="Models\Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Models\CreatePersonViewModel.cs" />
     <Compile Include="ViewModels\PageInfo.cs" />
     <Content Include="Views\Person\_DetailsPartial.cshtml" />
     <Content Include="Views\Person\_CreatePartial.cshtml" />
@@ -319,11 +312,8 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202408272011119_CustomPerson.resx">
-      <DependentUpon>202408272011119_CustomPerson.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202409041252592_dataValidation.resx">
-      <DependentUpon>202409041252592_dataValidation.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202409301343064_InitialCreate.resx">
+      <DependentUpon>202409301343064_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

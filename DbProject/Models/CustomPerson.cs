@@ -21,5 +21,6 @@ namespace DbProject.Models
         public int EmailPromotion { get; set; }
         public string PersonType { get; set; }
         public bool NameStyle { get; set; }
+        public string PrimaryEmailAddress { get; set; }
     }
 }

@@ -18,11 +18,12 @@
                 <a href="#" class="sort-link" data-sort="LastName">Last Name</a>
             </th>
             <th>
-                <a href="#" class="sort-link" data-sort="ModifiedDate">Modified Date</a>
+                <a href="#" class="sort-link" data-sort="PrimaryEmailAddress">Email Address</a>
             </th>
             <th>
-                
+                <a href="#" class="sort-link" data-sort="ModifiedDate">Modified Date</a>
             </th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -35,6 +36,7 @@
                 <td>@Html.DisplayFor(modelItem => person.Title)</td>
                 <td>@Html.DisplayFor(modelItem => person.FirstName)</td>
                 <td>@Html.DisplayFor(modelItem => person.LastName)</td>
+                <td>@Html.DisplayFor(modelItem => person.PrimaryEmailAddress)</td>
                 <td>@Html.DisplayFor(modelItem => person.ModifiedDate)</td>
                 <td>
                     <button class="btn btn-info details-button" data-toggle="modal" data-target="#detailsModal" data-id="@person.CustomPersonID">
@@ -46,6 +48,10 @@
     </tbody>
 </table>
 
+<input type="hidden" id="currentPage" value="@ViewBag.CurrentPage" />
+
+
 <div>
     @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, sortOrder = ViewBag.CurrentSort }))
 </div>
+

@@ -92,8 +92,11 @@
 
                 $('#currentSortOrder').val(newSortOrder);
 
+                // Use the current page number from the PagedList
                 loadPersonList(newSortOrder, '@ViewBag.CurrentPage');
             });
+
+
 
 
             // Pagination functionality
@@ -104,13 +107,18 @@
                 loadPersonList(currentSortOrder, page);
             });
 
-            $(document).on('click', '.pagination a', function (e) {
+
+            $(document).on('click', '.pagination-link', function (e) {
                 e.preventDefault();
-                var url = $(this).attr('href');
-                $.get(url, function (data) {
-                    $('#personListContainer').html(data);
-                    bindRowSelection();
-                });
+
+                // Get the page number from the clicked link
+                var page = $(this).data('page');
+
+                // Update the hidden field for current page
+                $('#currentPage').val(page);
+
+                // Reload the person list with the current sort order and new page
+                loadPersonList($('#currentSortOrder').val(), page);
             });
 
 

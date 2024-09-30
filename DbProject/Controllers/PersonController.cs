@@ -13,6 +13,9 @@ namespace DbProject.Controllers
         // GET: Person
         public ActionResult Index(string sortOrder, int? page)
         {
+            ViewBag.CurrentSort = sortOrder; // Store the current sort order for the pager
+            ViewBag.CurrentPage = page ?? 1; // Set the current page
+
             // Debugging statements
             System.Diagnostics.Debug.WriteLine($"Received sortOrder: {sortOrder}");
             System.Diagnostics.Debug.WriteLine($"Received page: {page}");
@@ -49,6 +52,12 @@ namespace DbProject.Controllers
                 case "LastName_desc":
                     customPeople = customPeople.OrderByDescending(cp => cp.LastName);
                     break;
+                case "PrimaryEmailAddress":
+                    customPeople = customPeople.OrderBy(cp => cp.PrimaryEmailAddress);
+                    break;
+                case "PrimaryEmailAddress_desc":
+                    customPeople = customPeople.OrderByDescending(cp => cp.PrimaryEmailAddress);
+                    break;
                 case "ModifiedDate":
                     customPeople = customPeople.OrderBy(cp => cp.ModifiedDate);
                     break;
@@ -64,9 +73,13 @@ namespace DbProject.Controllers
             int pageSize = 25;
             int pageNumber = (page ?? 1);
 
+
+
+            ViewBag.CurrentSort = sortOrder;
+            ViewBag.CurrentPage = pageNumber; // Sets current page for the view
+
             // Apply pagination
             var pagedList = customPeople.ToPagedList(pageNumber, pageSize);
-
 
             // Return partial view for AJAX requests or full view
             if (Request.IsAjaxRequest())
@@ -168,6 +181,7 @@ namespace DbProject.Controllers
                 existingPerson.Title = customPerson.Title;
                 existingPerson.FirstName = customPerson.FirstName;
                 existingPerson.LastName = customPerson.LastName;
+                existingPerson.PrimaryEmailAddress = customPerson.PrimaryEmailAddress;
                 existingPerson.ModifiedDate = DateTime.Now;
 
                 try
